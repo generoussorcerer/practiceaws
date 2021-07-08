@@ -1,4 +1,4 @@
-package model;
+package controller;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;

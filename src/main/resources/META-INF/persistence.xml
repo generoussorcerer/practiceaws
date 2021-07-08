@@ -7,11 +7,14 @@
 
     <persistence-unit name="COLIBRI" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
         <properties>
-            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://ec2-34-247-151-118.eu-west-1.compute.amazonaws.com:5432/daed1i40apdeia?sslmode=require"/>
-            <property name="hibernate.connection.username" value="dbsspeatqtcmwm"/>
-            <property name="hibernate.connection.password" value="fbaef35ba29f17138da26db4ecc90afeecf8b5d7eed98da2c0e87f41b700e5b2"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
+            <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/amazon"/>
+            <property name="hibernate.connection.username" value="root"/>
+            <property name="hibernate.connection.password" value="admin123"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
         </properties>
     </persistence-unit>
 

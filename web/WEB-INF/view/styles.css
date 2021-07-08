@@ -172,9 +172,8 @@ input.valid.success-handle, label.valid.success-handle {
 
 {box-sizing: border-box;}
 
-/* Кнопка, используемая для открытия формы чата - исправлена в нижней части страницы */
 .open-button {
-    background-color: #555;
+    background-color: #fea0b0;
     color: white;
     padding: 16px 20px;
     border: none;
@@ -186,59 +185,59 @@ input.valid.success-handle, label.valid.success-handle {
     width: 280px;
 }
 
-/* Всплывающий чат - скрыт по умолчанию */
 .form-popup {
     background: lightgrey;
     display: none;
     position: fixed;
-    bottom: 0;
+    bottom: -5px;
     right: 15px;
-    border: 3px solid #f1f1f1;
+    border: 2px solid black;
+    border-radius:10px;
     z-index: 9;
 }
 
-/* Добавить стили для контейнера формы */
-.form-container {
-    max-width: 300px;
+.chat-container {
+    width: 25%;
     padding: 10px;
     background-color: white;
 }
 
-/* Полная ширина текстовой области */
-.form-container textarea {
+.chat-container textarea  {
     width: 100%;
     padding: 15px;
     margin: 5px 0 22px 0;
     border: none;
     background: #f1f1f1;
     resize: none;
-    min-height: 100px;
+    min-height: 75px;
 }
 
-/* Когда текстовое поле получает фокус, сделайте что-нибудь */
-.form-container textarea:focus {
+
+.chat-container textarea:focus {
     background-color: #ddd;
     outline: none;
 }
 
-/* Установите стиль для кнопки отправить/войти */
-.form-container .btn {
-    background-color: #4CAF50;
+.chat-container .btn {
+    background-color: #fea0b0;
     color: white;
     padding: 16px 20px;
-    border: none;
     cursor: pointer;
     width: 100%;
     margin-bottom:10px;
-    opacity: 0.8;
+    border: 2px solid black;
+    border-radius: 5px;
 }
 
-/* Добавить красный цвет фона для кнопки "Отмена" */
-.form-container .cancel {
-    background-color: red;
+.chat-container .cancel {
+    background-color: black;
 }
 
-/* Добавить некоторые эффекты наведения на кнопки */
-.form-container .btn:hover, .open-button:hover {
-    opacity: 1;
+.chat-container .btn:hover, .open-button:hover {
+    background-color: #f54966;
+}
+
+ul {
+    list-style-type: none;
+    padding: 10px;
 }

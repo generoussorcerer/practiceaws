@@ -1,13 +1,8 @@
-package model.dao;
+package controller.dao;
 
-import model.JPAManager;
+import controller.JPAManager;
 
 import javax.persistence.EntityManager;
-
-/**
- * Abstract DAO: describing connection methods
- */
-
 
 abstract class DAO
 {
