@@ -2,8 +2,6 @@ package controller.dao;
 
 
 import model.Folder;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -29,7 +27,7 @@ public class FolderDAO extends DAO
         return getEntityManager().createQuery(query).getResultList();
     }
 
-    public void createBooking(String folderName, String url)
+    public void createEntry(String folderName, String url)
     {
         getEntityManager().getTransaction().begin();
 

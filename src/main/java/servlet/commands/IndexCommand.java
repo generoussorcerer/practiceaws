@@ -1,6 +1,7 @@
 package servlet.commands;
 
 import controller.dao.FolderDAO;
+import model.Folder;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -41,8 +42,11 @@ import java.util.zip.ZipOutputStream;
 
 public class IndexCommand implements Command
 {
+    private static FolderDAO folderDAO = new FolderDAO();
+
     @Override
-    public String getPattern() {
+    public String getPattern()
+    {
         return "index";
     }
 
@@ -50,6 +54,8 @@ public class IndexCommand implements Command
     public void doGet(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext)
             throws ServletException, IOException
     {
+        List<Folder> list = folderDAO.readFolders();
+        request.setAttribute("downloadFiles", list);
 
         RequestDispatcher dispatcher = servletContext.getRequestDispatcher("/WEB-INF/view/index.jsp");
         dispatcher.forward(request, response);
@@ -60,7 +66,6 @@ public class IndexCommand implements Command
             throws ServletException, IOException
     {
         File file;
-        PrintWriter out = response.getWriter();
         int maxFileSize = 5000 * 1024;
         int maxMemSize = 5000 * 1024;
         String uploadPath = "D:\\Web\\upload\\";
@@ -83,16 +88,10 @@ public class IndexCommand implements Command
 
                 Iterator i = fileItems.iterator();
 
-                String zipName = "archive01.zip";
+                String zipName = "archive" + (folderDAO.readFolders().size() + 1) + ".zip";
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ZipOutputStream zipOutputStream = new ZipOutputStream(bos);
-
-                out.println("<html>");
-                out.println("<head>");
-                out.println("<title>JSP File upload</title>");
-                out.println("</head>");
-                out.println("<body>");
 
                 while (i.hasNext())
                 {
@@ -104,46 +103,11 @@ public class IndexCommand implements Command
                         System.out.println(fileName);
                         String path;
 
-//                        if( fileName.lastIndexOf("\\") >= 0 )
-//                        {
-//                            path = uploadPath +
-//                                    fileName.substring( fileName.lastIndexOf("\\"));
-//                            file = new File(path);
-//                        }
-//                        else
-//                        {
-//                            path = uploadPath +
-//                                    fileName.substring(fileName.lastIndexOf("\\") + 1);
-//                            file = new File(path);
-//                        }
-
                         path = uploadPath +
                                 fileName.substring( fileName.lastIndexOf("/") + 1);
                         file = new File(path);
 
                         fi.write(file);
-                        out.println("<br>Uploaded Filename: " +
-                                fileName + "<br>" + path);
-
-
-//                        String bucketName = "saudade0807";
-//                        String keyName =  fileName;
-
-//                        Region region = Region.US_EAST_2;
-//                        S3Client s3 = S3Client.builder()
-//                                .region(region)
-//                                .build();
-//
-//                        String result = putS3Object(s3, bucketName, keyName, objectPath);
-//                        System.out.println("Tag information: "+result);
-//                        s3.close();
-//
-//                        S3Presigner presigner = S3Presigner.builder()
-//                                .region(region)
-//                                .build();
-//
-//                        signBucket(presigner, bucketName, keyName, FileUtils.readFileToByteArray(file));
-//                        presigner.close();
 
                         FileInputStream fis = new FileInputStream(file);
                         ZipEntry zipEntry = new ZipEntry(fileName.substring( fileName.lastIndexOf("/") + 1));
@@ -171,24 +135,12 @@ public class IndexCommand implements Command
                 signBucket(presigner, bucketName, keyName, bos.toByteArray());
                 presigner.close();
 
-                out.println("</body>");
-                out.println("</html>");
+                doGet(request, response, servletContext);
             }
             catch(Exception ex)
             {
                 System.out.println(ex);
             }
-        }
-        else
-        {
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet upload</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<p>No file uploaded</p>");
-            out.println("</body>");
-            out.println("</html>");
         }
     }
 
@@ -276,26 +228,7 @@ public class IndexCommand implements Command
             connection.getResponseCode();
             System.out.println("HTTP response code is " + connection.getResponseCode());
 
-
-            GetObjectRequest getObjectRequest =
-                    GetObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(keyName)
-                            .build();
-
-            GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(45))
-                    .getObjectRequest(getObjectRequest)
-                    .build();
-
-            // Generate the presigned request
-            PresignedGetObjectRequest presignedGetObjectRequest =
-                    presigner.presignGetObject(getObjectPresignRequest);
-
-            // Log the presigned URL
-            System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
-
-           // new FolderDAO().createBooking(keyName, getPresignedUrl(presigner, bucketName, keyName));
+            folderDAO.createEntry(keyName, getPresignedUrl(presigner, bucketName, keyName));
 
         }
         catch (S3Exception e)
@@ -359,4 +292,24 @@ public class IndexCommand implements Command
             return null;
         }
     }
+
+//                        String bucketName = "saudade0807";
+//                        String keyName =  fileName;
+
+//                        Region region = Region.US_EAST_2;
+//                        S3Client s3 = S3Client.builder()
+//                                .region(region)
+//                                .build();
+//
+//                        String result = putS3Object(s3, bucketName, keyName, objectPath);
+//                        System.out.println("Tag information: "+result);
+//                        s3.close();
+//
+//                        S3Presigner presigner = S3Presigner.builder()
+//                                .region(region)
+//                                .build();
+//
+//                        signBucket(presigner, bucketName, keyName, FileUtils.readFileToByteArray(file));
+//                        presigner.close();
+
 }

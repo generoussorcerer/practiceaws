@@ -6,7 +6,7 @@
              version="1.0">
 
     <persistence-unit name="COLIBRI" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <properties>
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.connection.url" value="jdbc:postgresql://ec2-54-155-35-88.eu-west-1.compute.amazonaws.com:5432/d3lp95vsvpfh1v?sslmode=require"/>

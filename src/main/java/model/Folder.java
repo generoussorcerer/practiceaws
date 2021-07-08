@@ -8,6 +8,7 @@ import javax.persistence.*;
 public class Folder
 {
     @Id
+    @Column(name = "folder_name")
     private String folderName;
 
     @Column(name = "url")
