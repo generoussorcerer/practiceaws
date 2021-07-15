@@ -9,4 +9,5 @@ public class Folder_
 {
     public static volatile SingularAttribute<Folder, String> folderName;
     public static volatile SingularAttribute<Folder, String> url;
+    public static volatile SingularAttribute<Folder, String> isFinished;
 }

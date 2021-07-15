@@ -65,83 +65,98 @@ public class IndexCommand implements Command
     public void doPost(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext)
             throws ServletException, IOException
     {
-        File file;
-        int maxFileSize = 5000 * 1024;
-        int maxMemSize = 5000 * 1024;
-        String uploadPath = "D:\\Web\\upload\\";
+//        String contentType = request.getContentType();
+//
+//        if ((contentType.indexOf("multipart/form-data") >= 0))
+//        {
+//            DiskFileItemFactory factory = new DiskFileItemFactory();
+//            factory.setRepository(new File("c:\\temp"));
+//
+//            ServletFileUpload upload = new ServletFileUpload(factory);
+//
+//            try
+//            {
+//                List fileItems = upload.parseRequest(request);
+//                String zipName = "archive" + (folderDAO.readFolders().size() + 1) + ".zip";
+//
+//                Iterator i = fileItems.iterator();
+//
+//                //zipping folder in one file
+//                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//                ZipOutputStream zipOutputStream = new ZipOutputStream(bos);
+//
+//                while (i.hasNext())
+//                {
+//                    FileItem fi = (FileItem)i.next();
+//
+//                    if (!fi.isFormField())
+//                    {
+//                        String fileName = fi.getName();
+//
+//                        ZipEntry zipEntry = new ZipEntry(fileName.substring( fileName.lastIndexOf("/") + 1));
+//                        zipOutputStream.putNextEntry(zipEntry);
+//
+//                        byte[] buffer = new byte[fi.getInputStream().available()];
+//                        fi.getInputStream().read(buffer);
+//                        zipOutputStream.write(buffer);
+//                        zipOutputStream.closeEntry();
+//
+//                    }
+//                }
+//
+//                zipOutputStream.close();
+//                bos.close();
+//
+//                //AWS S3 upload using presigned URL
+//                String bucketName = "saudade0807";
+//                String keyName =  zipName;
+//                Region region = Region.US_EAST_2;
+//
+//                S3Presigner presigner = S3Presigner.builder()
+//                        .region(region)
+//                        .build();
+//
+//                signBucket(presigner, bucketName, keyName, bos.toByteArray());
+//                presigner.close();
+//
+//                doGet(request, response, servletContext);
+//            }
+//            catch(Exception ex)
+//            {
+//                System.out.println(ex);
+//            }
+//        }
 
-        String contentType = request.getContentType();
+        String bucketName = "saudade0807";
+        String keyName =  "archive" + (folderDAO.readFolders().size() + 1) + ".zip";
+        System.out.println(keyName);
+        Region region = Region.US_EAST_2;
 
-        if ((contentType.indexOf("multipart/form-data") >= 0))
-        {
-            DiskFileItemFactory factory = new DiskFileItemFactory();
-            factory.setSizeThreshold(maxMemSize);
-            factory.setRepository(new File("c:\\temp"));
-
-            ServletFileUpload upload = new ServletFileUpload(factory);
-            upload.setSizeMax(maxFileSize);
-
-            try
-            {
-                List fileItems = upload.parseRequest(request);
-                System.out.println("file size is: " + fileItems.size());
-
-                Iterator i = fileItems.iterator();
-
-                String zipName = "archive" + (folderDAO.readFolders().size() + 1) + ".zip";
-
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ZipOutputStream zipOutputStream = new ZipOutputStream(bos);
-
-                while (i.hasNext())
-                {
-                    FileItem fi = (FileItem)i.next();
-
-                    if (!fi.isFormField())
-                    {
-                        String fileName = fi.getName();
-                        System.out.println(fileName);
-                        String path;
-
-                        path = uploadPath +
-                                fileName.substring( fileName.lastIndexOf("/") + 1);
-                        file = new File(path);
-
-                        fi.write(file);
-
-                        FileInputStream fis = new FileInputStream(file);
-                        ZipEntry zipEntry = new ZipEntry(fileName.substring( fileName.lastIndexOf("/") + 1));
-                        zipOutputStream.putNextEntry(zipEntry);
-
-                        byte[] buffer = new byte[fis.available()];
-                        fis.read(buffer);
-                        zipOutputStream.write(buffer);
-                        zipOutputStream.closeEntry();
-
-                    }
-                }
-
-                zipOutputStream.close();
-                bos.close();
-
-                String bucketName = "saudade0807";
-                String keyName =  zipName;
-                Region region = Region.US_EAST_2;
-
-                S3Presigner presigner = S3Presigner.builder()
+        S3Presigner presigner = S3Presigner.builder()
                         .region(region)
                         .build();
 
-                signBucket(presigner, bucketName, keyName, bos.toByteArray());
-                presigner.close();
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .contentType("application/zip")
+                .build();
 
-                doGet(request, response, servletContext);
-            }
-            catch(Exception ex)
-            {
-                System.out.println(ex);
-            }
-        }
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(45))
+                .putObjectRequest(objectRequest)
+                .build();
+
+        PresignedPutObjectRequest presignedRequest = presigner.presignPutObject(presignRequest);
+
+        String content = presignedRequest.url().toString();
+
+        response.setContentType("text/plain");
+
+        OutputStream outStream = response.getOutputStream();
+        outStream.write(content.getBytes("UTF-8"));
+        outStream.flush();
+        outStream.close();
     }
 
     public static String putS3Object(S3Client s3,
@@ -259,31 +274,6 @@ public class IndexCommand implements Command
             // Generate the presigned request
             PresignedGetObjectRequest presignedGetObjectRequest =
                     presigner.presignGetObject(getObjectPresignRequest);
-
-            // Log the presigned URL
-            System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
-
-            HttpURLConnection connection = (HttpURLConnection) presignedGetObjectRequest.url().openConnection();
-            presignedGetObjectRequest.httpRequest().headers().forEach((header, values) -> {
-                values.forEach(value -> {
-                    connection.addRequestProperty(header, value);
-                });
-            });
-
-            // Send any request payload that the service needs (not needed when isBrowserExecutable is true)
-            if (presignedGetObjectRequest.signedPayload().isPresent()) {
-                connection.setDoOutput(true);
-                try (InputStream signedPayload = presignedGetObjectRequest.signedPayload().get().asInputStream();
-                     OutputStream httpOutputStream = connection.getOutputStream()) {
-                    IoUtils.copy(signedPayload, httpOutputStream);
-                }
-            }
-
-            // Download the result of executing the request
-            try (InputStream content = connection.getInputStream()) {
-                System.out.println("Service returned response: ");
-                IoUtils.copy(content, System.out);
-            }
 
             return presignedGetObjectRequest.url().toString();
         }

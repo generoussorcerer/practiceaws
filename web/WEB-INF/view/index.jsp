@@ -11,6 +11,7 @@
   <style>
     <%@include file="styles.css"%>
   </style>
+
 </head>
 <body>
 
@@ -24,10 +25,9 @@
         <div class="card w-100">
           <div class="card-body">
             <div class="page-form" >
-              <form action = "${pageContext.request.contextPath}/serv?command=index"
-                    method = "post" enctype = "multipart/form-data">
-                <input type = "file" name = "file" webkitdirectory multiple/> <br />
-                <input type = "submit" value = "Upload File" />
+              <form enctype = "multipart/form-data">
+                <input type = "file" name = "archive"  id="archive" webkitdirectory mozdirectory/> <br />
+                <input type = "submit" value = "Upload File" onclick="loadFunction()"/>
               </form>
             </div>
           </div>
@@ -46,6 +46,8 @@
               </tr>
               </thead>
               <tbody>
+              <strong>OTVER SERVLETA</strong>:
+              <input id="ajaxUserServletResponse"></input>
               <c:forEach items="${downloadFiles}" var="folder">
                 <tr>
                   <td scope="col">${folder.getFolderName()}</td>
@@ -60,6 +62,11 @@
     </div>
   </div>
 </div>
+
+<script src="script/aws-sdk.js" type="text/javascript"></script>
+<script src="script/jquery-3.6.0.js" type="text/javascript"></script>
+<script src="script/jszip.js" type="text/javascript"></script>
+<script src="script/load.js" type="text/javascript"></script>
 
 </body>
 </html>
