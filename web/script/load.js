@@ -61,7 +61,7 @@ function loadFunction(){
         url: $('#ajaxUserServletResponse').val(),
         data: file_object,
         processData : false,
-        headers: {'Content-Type': 'application/zip'},
+        headers: {'Content-Type': 'application/zip', 'x-amz-acl': 'public-read'},
         success: function() {
             alert('Successful upload!')
         },
